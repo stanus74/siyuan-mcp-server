@@ -1,23 +1,23 @@
 /**
- * 工具调用优先级管理器
- * 确保AI调用MCP工具时遵循正确的顺序和依赖关系
+ * Tool call priority manager
+ * Ensures AI follows the correct order and dependency chain when invoking MCP tools
  */
 
 import logger from '../logger';
 
 /**
- * 工具优先级枚举
+ * Tool priority enumeration
  */
 export enum ToolPriority {
-  CRITICAL = 1,    // 关键操作：笔记本验证、权限检查
-  HIGH = 2,        // 高优先级：文档创建前置条件
-  MEDIUM = 3,      // 中等优先级：常规文档操作
-  LOW = 4,         // 低优先级：辅助功能
-  BACKGROUND = 5   // 后台操作：清理、统计等
+  CRITICAL = 1,    // Critical: notebook validation, permission checks
+  HIGH = 2,        // High: prerequisites before document creation
+  MEDIUM = 3,      // Medium: standard document operations
+  LOW = 4,         // Low: supporting utilities
+  BACKGROUND = 5   // Background: cleanup, analytics, etc.
 }
 
 /**
- * 工具依赖关系接口
+ * Tool dependency definition
  */
 export interface ToolDependency {
   toolName: string;
@@ -28,7 +28,7 @@ export interface ToolDependency {
 }
 
 /**
- * 工具调用记录接口
+ * Tool call record
  */
 export interface ToolCallRecord {
   toolName: string;
@@ -40,7 +40,7 @@ export interface ToolCallRecord {
 }
 
 /**
- * 工具优先级管理器类
+ * Tool priority manager implementation
  */
 export class ToolPriorityManager {
   private toolDependencies: Map<string, ToolDependency> = new Map();
@@ -52,55 +52,54 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 初始化工具依赖关系
+   * Initialize tool dependencies
    */
   private initializeToolDependencies(): void {
-    // 笔记本相关工具
+    // Notebook-related tools
     this.registerTool({
       toolName: 'listNotebooks',
       requiredTools: [],
       priority: ToolPriority.CRITICAL,
-      description: '获取笔记本列表 - 所有文档操作的前置条件',
-      validationRules: ['必须首先验证笔记本存在性']
+      description: 'Get notebook list - prerequisite for all document operations',
+      validationRules: ['Must first verify notebook existence']
     });
 
     this.registerTool({
       toolName: 'openNotebook',
       requiredTools: ['listNotebooks'],
       priority: ToolPriority.CRITICAL,
-      description: '打开笔记本 - 文档操作前必须确保笔记本已打开',
-      validationRules: ['笔记本必须存在', '笔记本不能处于关闭状态']
+      description: 'Open notebook - must ensure notebook is open before document operations',
+      validationRules: ['Notebook must exist', 'Notebook must not be closed']
     });
 
-    // 文档创建相关工具
+    // Document creation related tools
     this.registerTool({
       toolName: 'createDoc',
       requiredTools: ['listNotebooks', 'openNotebook'],
       priority: ToolPriority.HIGH,
-      description: '创建文档 - 必须在验证笔记本后执行',
+      description: 'Create document - must be executed after notebook validation',
       validationRules: [
-        '禁止直接创建文档',
-        '必须先验证目标笔记本存在',
-        '必须确保笔记本已打开',
-        '文档标题不能为空'
+        'Direct document creation prohibited',
+        'Must first verify target notebook exists',
+        'Must ensure notebook is open',
+        'Document title cannot be empty'
       ]
     });
-
     // 文档查询工具
     this.registerTool({
       toolName: 'getDoc',
       requiredTools: [],
       priority: ToolPriority.MEDIUM,
-      description: '获取文档内容',
-      validationRules: ['文档ID必须有效']
+      description: 'Get document content',
+      validationRules: ['Document ID must be valid']
     });
 
     this.registerTool({
       toolName: 'searchDocs',
       requiredTools: [],
       priority: ToolPriority.MEDIUM,
-      description: '搜索文档',
-      validationRules: ['搜索关键词不能为空']
+      description: 'Search documents',
+      validationRules: ['Search keyword cannot be empty']
     });
 
     // 文档修改工具
@@ -108,16 +107,16 @@ export class ToolPriorityManager {
       toolName: 'updateDoc',
       requiredTools: ['getDoc'],
       priority: ToolPriority.MEDIUM,
-      description: '更新文档内容 - 建议先获取当前内容',
-      validationRules: ['文档必须存在', '内容不能为空']
+      description: 'Update document content - recommend getting current content first',
+      validationRules: ['Document must exist', 'Content cannot be empty']
     });
 
     this.registerTool({
       toolName: 'deleteDoc',
       requiredTools: ['getDoc'],
       priority: ToolPriority.HIGH,
-      description: '删除文档 - 高风险操作，需要确认',
-      validationRules: ['文档必须存在', '需要二次确认']
+      description: 'Delete document - high-risk operation, requires confirmation',
+      validationRules: ['Document must exist', 'Requires secondary confirmation']
     });
 
     // 批量操作工具
@@ -125,11 +124,11 @@ export class ToolPriorityManager {
       toolName: 'batchReadAllDocuments',
       requiredTools: ['listNotebooks'],
       priority: ToolPriority.LOW,
-      description: '批量读取所有文档 - 资源密集型操作',
-      validationRules: ['笔记本必须存在', '建议在低峰时段执行']
+      description: 'Batch read all documents - resource-intensive operation',
+      validationRules: ['Notebook must exist', 'Recommend executing during off-peak hours']
     });
 
-    logger.info(`已注册 ${this.toolDependencies.size} 个工具的依赖关系`);
+    logger.info(`Registered ${this.toolDependencies.size} tool dependencies`);
   }
 
   /**
@@ -137,7 +136,7 @@ export class ToolPriorityManager {
    */
   registerTool(dependency: ToolDependency): void {
     this.toolDependencies.set(dependency.toolName, dependency);
-    logger.debug(`注册工具依赖: ${dependency.toolName}`);
+    logger.debug(`Registered tool dependency: ${dependency.toolName}`);
   }
 
   /**
@@ -156,7 +155,7 @@ export class ToolPriorityManager {
 
     // 检查工具是否已注册
     if (!dependency) {
-      warnings.push(`工具 ${toolName} 未注册依赖关系，建议添加`);
+      warnings.push(`Tool ${toolName} has no registered dependencies, recommend adding`);
       return {
         valid: true, // 未注册的工具允许调用，但给出警告
         errors,
@@ -172,7 +171,7 @@ export class ToolPriorityManager {
       );
 
       if (!hasBeenCalled) {
-        errors.push(`缺少依赖工具的调用记录: ${requiredTool}`);
+        errors.push(`Missing call record for required tool: ${requiredTool}`);
         requiredPrerequisites.push(requiredTool);
       }
     }
@@ -181,12 +180,12 @@ export class ToolPriorityManager {
     if (toolName === 'createDoc') {
       // 验证笔记本参数
       if (!parameters?.notebook) {
-        errors.push('参数验证失败: 缺少笔记本ID');
+        errors.push('Parameter validation failed: missing notebook ID');
       }
 
       // 验证标题参数
       if (!parameters?.title || typeof parameters.title !== 'string' || parameters.title.trim().length === 0) {
-        errors.push('参数验证失败: 文档标题不能为空');
+        errors.push('Parameter validation failed: document title cannot be empty');
       }
 
       // 检查是否尝试直接创建文档
@@ -195,7 +194,7 @@ export class ToolPriorityManager {
       );
 
       if (!hasNotebookValidation) {
-        errors.push('违反安全规则: 禁止直接创建文档，必须先验证笔记本');
+        errors.push('Security rule violation: Direct document creation prohibited, must first validate notebook');
       }
     }
 
@@ -218,7 +217,7 @@ export class ToolPriorityManager {
       this.callHistory = this.callHistory.slice(-this.maxHistorySize);
     }
 
-    logger.debug(`记录工具调用: ${record.toolName}, 成功: ${record.success}`);
+    logger.debug(`Recorded tool call: ${record.toolName}, success: ${record.success}`);
   }
 
   /**
@@ -293,7 +292,7 @@ export class ToolPriorityManager {
    */
   clearHistory(): void {
     this.callHistory = [];
-    logger.info('已清理工具调用历史');
+    logger.info('Cleared tool call history');
   }
 
   /**
@@ -334,13 +333,13 @@ export class ToolPriorityManager {
    * 生成工具调用指南
    */
   generateCallGuide(): string {
-    let guide = '# SiYuan MCP 工具调用指南\n\n';
-    guide += '## 重要安全规则\n';
-    guide += '1. **禁止直接创建文档** - 必须先验证笔记本存在性\n';
-    guide += '2. **严格遵循调用顺序** - 按照依赖关系执行工具调用\n';
-    guide += '3. **参数验证** - 确保所有必需参数都已提供\n\n';
+    let guide = '# SiYuan MCP Tool Call Guide\n\n';
+    guide += '## Important Security Rules\n';
+    guide += '1. **Direct document creation prohibited** - Must first validate notebook existence\n';
+    guide += '2. **Strictly follow call order** - Execute tool calls according to dependencies\n';
+    guide += '3. **Parameter validation** - Ensure all required parameters are provided\n\n';
 
-    guide += '## 工具优先级和依赖关系\n\n';
+    guide += '## Tool Priority and Dependencies\n\n';
 
     // 按优先级分组
     const toolsByPriority = new Map<ToolPriority, ToolDependency[]>();
@@ -351,7 +350,7 @@ export class ToolPriorityManager {
     }
 
     for (const [priority, tools] of toolsByPriority) {
-      guide += `### ${this.getPriorityName(priority)} (优先级 ${priority})\n\n`;
+      guide += `### ${this.getPriorityName(priority)} (Priority ${priority})\n\n`;
       
       for (const tool of tools) {
         guide += `**${tool.toolName}**\n`;
@@ -371,15 +370,14 @@ export class ToolPriorityManager {
       }
     }
 
-    guide += '## 推荐调用流程\n\n';
-    guide += '### 创建文档的正确流程\n';
-    guide += '1. `listNotebooks` - 获取并验证笔记本列表\n';
-    guide += '2. `openNotebook` - 确保目标笔记本已打开\n';
-    guide += '3. `createDoc` - 在验证后的笔记本中创建文档\n\n';
-
-    guide += '### 修改文档的推荐流程\n';
-    guide += '1. `getDoc` - 获取当前文档内容\n';
-    guide += '2. `updateDoc` - 更新文档内容\n\n';
+    guide += '## Recommended Call Flow\n\n';
+    guide += '### Correct Flow for Creating Documents\n';
+    guide += '1. `listNotebooks` - Get and validate notebook list\n';
+    guide += '2. `openNotebook` - Ensure target notebook is open\n';
+    guide += '3. `createDoc` - Create document in validated notebook\n\n';
+    guide += '### Recommended Flow for Modifying Documents\n';
+    guide += '1. `getDoc` - Get current document content\n';
+    guide += '2. `updateDoc` - Update document content\n\n';
 
     return guide;
   }
@@ -389,12 +387,12 @@ export class ToolPriorityManager {
    */
   private getPriorityName(priority: ToolPriority): string {
     switch (priority) {
-      case ToolPriority.CRITICAL: return '关键操作';
-      case ToolPriority.HIGH: return '高优先级';
-      case ToolPriority.MEDIUM: return '中等优先级';
-      case ToolPriority.LOW: return '低优先级';
-      case ToolPriority.BACKGROUND: return '后台操作';
-      default: return '未知优先级';
+      case ToolPriority.CRITICAL: return 'Critical Operation';
+      case ToolPriority.HIGH: return 'High Priority';
+      case ToolPriority.MEDIUM: return 'Medium Priority';
+      case ToolPriority.LOW: return 'Low Priority';
+      case ToolPriority.BACKGROUND: return 'Background Operation';
+      default: return 'Unknown Priority';
     }
   }
 }

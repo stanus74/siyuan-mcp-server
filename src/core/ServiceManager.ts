@@ -1,6 +1,6 @@
 /**
- * 服务管理器
- * 统一管理所有服务的生命周期和状态
+ * Service manager
+ * Unified management of all service lifecycles and states
  */
 
 import logger from '../logger.js';
@@ -15,30 +15,30 @@ export class ServiceManager {
   private isInitialized: boolean = false;
 
   /**
-   * 注册服务
+   * Register services
    */
   register(service: BaseService): void {
     const serviceName = service.getModuleStatus().name;
     
     if (this.services.has(serviceName)) {
-      logger.warn(`服务 '${serviceName}' 已存在，将被覆盖`);
+      logger.warn(`Service '${serviceName}' already exists and will be overwritten`);
     }
 
     this.services.set(serviceName, service);
-    logger.info(`服务 '${serviceName}' 注册成功`);
+    logger.info(`Service '${serviceName}' registered successfully`);
   }
 
   /**
-   * 注销服务
+   * Unregister services
    */
   async unregister(serviceName: string): Promise<void> {
     const service = this.services.get(serviceName);
     if (service) {
       await service.destroy();
       this.services.delete(serviceName);
-      logger.info(`服务 '${serviceName}' 注销成功`);
+      logger.info(`Service '${serviceName}' unregistered successfully`);
     } else {
-      logger.warn(`服务 '${serviceName}' 不存在，无法注销`);
+      logger.warn(`Service '${serviceName}' does not exist and cannot be unregistered`);
     }
   }
 
@@ -50,22 +50,22 @@ export class ServiceManager {
   }
 
   /**
-   * 初始化所有服务
+   * Initialize all services
    */
   async initializeAll(): Promise<void> {
     if (this.isInitialized) {
-      logger.warn('服务管理器已初始化');
+      logger.warn('Service manager already initialized');
       return;
     }
 
-    logger.info('开始初始化所有服务...');
+    logger.info('Starting initialization of all services...');
     
     const initPromises = Array.from(this.services.entries()).map(async ([name, service]) => {
       try {
         await service.initialize();
-        logger.info(`服务 '${name}' 初始化成功`);
+        logger.info(`Service '${name}' initialized successfully`);
       } catch (error: any) {
-        logger.error(`服务 '${name}' 初始化失败:`, error);
+        logger.error(`Service '${name}' initialization failed:`, error);
         throw new Error(`服务 '${name}' 初始化失败: ${error.message}`);
       }
     });
@@ -73,21 +73,21 @@ export class ServiceManager {
     await Promise.all(initPromises);
     
     this.isInitialized = true;
-    logger.info('所有服务初始化完成');
+    logger.info('All services initialization completed');
   }
 
   /**
-   * 销毁所有服务
+   * Destroy all services
    */
   async destroyAll(): Promise<void> {
-    logger.info('开始销毁所有服务...');
+    logger.info('Starting destruction of all services...');
     
     const destroyPromises = Array.from(this.services.entries()).map(async ([name, service]) => {
       try {
         await service.destroy();
-        logger.info(`服务 '${name}' 销毁成功`);
+        logger.info(`Service '${name}' destroyed successfully`);
       } catch (error: any) {
-        logger.error(`服务 '${name}' 销毁失败:`, error);
+        logger.error(`Service '${name}' destruction failed:`, error);
       }
     });
 
@@ -95,11 +95,11 @@ export class ServiceManager {
     
     this.services.clear();
     this.isInitialized = false;
-    logger.info('所有服务销毁完成');
+    logger.info('All services destruction completed');
   }
 
   /**
-   * 获取所有服务的健康状态
+   * Get health status of all services
    */
   async getHealthStatus(): Promise<Record<string, HealthCheckResult>> {
     const healthResults: Record<string, HealthCheckResult> = {};
@@ -108,7 +108,7 @@ export class ServiceManager {
       try {
         healthResults[name] = await service.healthCheck();
       } catch (error: any) {
-        logger.error(`获取服务 '${name}' 健康状态失败:`, error);
+        logger.error(`Failed to get health status for service '${name}':`, error);
         healthResults[name] = {
           status: 'unhealthy',
           details: {
@@ -127,7 +127,7 @@ export class ServiceManager {
   }
 
   /**
-   * 获取所有服务的模块状态
+   * Get module status of all services
    */
   getAllModuleStatus(): Record<string, ModuleStatus> {
     const statusResults: Record<string, ModuleStatus> = {};
@@ -136,7 +136,7 @@ export class ServiceManager {
       try {
         statusResults[name] = service.getModuleStatus();
       } catch (error: any) {
-        logger.error(`获取服务 '${name}' 模块状态失败:`, error);
+        logger.error(`Failed to get module status for service '${name}':`, error);
         statusResults[name] = {
           name,
           version: 'unknown',
@@ -156,36 +156,36 @@ export class ServiceManager {
   }
 
   /**
-   * 重启服务
+   * Restart service
    */
   async restartService(serviceName: string): Promise<void> {
     const service = this.services.get(serviceName);
     if (!service) {
-      throw new Error(`服务 '${serviceName}' 不存在`);
+      throw new Error(`Service '${serviceName}' does not exist`);
     }
 
-    logger.info(`正在重启服务: ${serviceName}`);
+    logger.info(`Restarting service: ${serviceName}`);
     
     try {
       await service.destroy();
       await service.initialize();
-      logger.info(`服务 '${serviceName}' 重启成功`);
+      logger.info(`Service '${serviceName}' restarted successfully`);
     } catch (error: any) {
-      logger.error(`服务 '${serviceName}' 重启失败:`, error);
+      logger.error(`Service '${serviceName}' restart failed:`, error);
       throw error;
     }
   }
 
   /**
-   * 重启所有服务
+   * Restart all services
    */
   async restartAll(): Promise<void> {
-    logger.info('开始重启所有服务...');
+    logger.info('Starting restart of all services...');
     
     await this.destroyAll();
     await this.initializeAll();
     
-    logger.info('所有服务重启完成');
+    logger.info('All services restart completed');
   }
 
   /**
@@ -232,13 +232,13 @@ export class ServiceManager {
   }
 
   /**
-   * 重置所有服务的统计信息
+   * Reset statistics for all services
    */
   resetAllStats(): void {
     for (const service of this.services.values()) {
       service.resetStats();
     }
-    logger.info('所有服务统计信息已重置');
+    logger.info('All service statistics have been reset');
   }
 }
 

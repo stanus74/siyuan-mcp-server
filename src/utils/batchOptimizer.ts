@@ -1,24 +1,24 @@
 /**
- * 批量操作优化器
- * 专门处理大量文档的批量读取、处理和优化
+ * Batch operation optimizer
+ * Handles bulk document reading/processing with adaptive safeguards
  */
 
 import logger from '../logger';
 
 /**
- * 批量操作配置接口
+ * Batch operation configuration interface
  */
 export interface BatchConfig {
-  batchSize: number;          // 批处理大小
-  maxConcurrency: number;     // 最大并发数
-  delay: number;              // 批次间延迟（毫秒）
-  retryAttempts: number;      // 重试次数
-  timeoutMs: number;          // 超时时间（毫秒）
-  memoryThreshold: number;    // 内存阈值（MB）
+  batchSize: number;          // Batch size
+  maxConcurrency: number;     // Maximum concurrency
+  delay: number;              // Delay between batches (ms)
+  retryAttempts: number;      // Retry attempts
+  timeoutMs: number;          // Timeout (ms)
+  memoryThreshold: number;    // Memory threshold (MB)
 }
 
 /**
- * 默认批量操作配置
+ * Default batch configuration
  */
 export const DEFAULT_BATCH_CONFIG: BatchConfig = {
   batchSize: 5,
@@ -30,7 +30,7 @@ export const DEFAULT_BATCH_CONFIG: BatchConfig = {
 };
 
 /**
- * 批量操作结果接口
+ * Batch operation result interface
  */
 export interface BatchResult<T> {
   success: T[];
@@ -45,7 +45,7 @@ export interface BatchResult<T> {
 }
 
 /**
- * 内存监控器
+ * Memory monitor
  */
 class MemoryMonitor {
   private initialMemory: number;
@@ -57,7 +57,7 @@ class MemoryMonitor {
   }
 
   /**
-   * 获取当前内存使用量（MB）
+   * Get current memory usage (MB)
    */
   getCurrentMemoryUsage(): number {
     const usage = process.memoryUsage();
@@ -65,7 +65,7 @@ class MemoryMonitor {
   }
 
   /**
-   * 更新峰值内存
+   * Update peak memory usage
    */
   updatePeak(): void {
     const current = this.getCurrentMemoryUsage();
@@ -75,7 +75,7 @@ class MemoryMonitor {
   }
 
   /**
-   * 获取内存统计
+   * Get memory statistics
    */
   getStats() {
     return {
@@ -86,14 +86,14 @@ class MemoryMonitor {
   }
 
   /**
-   * 检查是否超过内存阈值
+   * Check if memory threshold is exceeded
    */
   isOverThreshold(threshold: number): boolean {
     return this.getCurrentMemoryUsage() > threshold;
   }
 
   /**
-   * 强制垃圾回收（如果可用）
+   * Force garbage collection (if enabled)
    */
   forceGC(): void {
     if (global.gc) {
@@ -104,7 +104,7 @@ class MemoryMonitor {
 }
 
 /**
- * 批量操作优化器类
+ * Batch optimizer
  */
 export class BatchOptimizer {
   private config: BatchConfig;
@@ -116,10 +116,10 @@ export class BatchOptimizer {
   }
 
   /**
-   * 执行批量操作
-   * @param items 要处理的项目数组
-   * @param processor 处理函数
-   * @returns 批量操作结果
+   * Execute a batch operation
+   * @param items Items to process
+   * @param processor Processing function
+   * @returns Batch result
    */
   async executeBatch<T, R>(
     items: T[],
@@ -133,7 +133,7 @@ export class BatchOptimizer {
       totalItems: items.length,
       batchSize: this.config.batchSize,
       maxConcurrency: this.config.maxConcurrency
-    }, '开始批量操作');
+    }, 'Starting batch operation');
 
     try {
       // 将项目分批处理
@@ -146,7 +146,7 @@ export class BatchOptimizer {
           logger.warn({
             currentMemory: this.memoryMonitor.getCurrentMemoryUsage(),
             threshold: this.config.memoryThreshold
-          }, '内存使用量超过阈值，执行垃圾回收');
+          }, 'Memory threshold exceeded, performing garbage collection');
           
           this.memoryMonitor.forceGC();
           
@@ -162,7 +162,7 @@ export class BatchOptimizer {
           if (result.success && result.data !== undefined) {
             results.push(result.data);
           } else {
-            failures.push({ item: result.item, error: result.error || '处理失败' });
+             failures.push({ item: result.item, error: result.error || 'Processing failed' });
           }
         });
 
@@ -177,7 +177,7 @@ export class BatchOptimizer {
           processed: progress,
           total: items.length,
           percentage: Math.round((progress / items.length) * 100)
-        }, '批量操作进度');
+        }, 'Batch progress update');
       }
 
       const executionTime = Date.now() - startTime;
@@ -189,7 +189,7 @@ export class BatchOptimizer {
         failed: failures.length,
         executionTime,
         memoryStats
-      }, '批量操作完成');
+      }, 'Batch operation completed');
 
       return {
         success: results,
@@ -200,16 +200,16 @@ export class BatchOptimizer {
       };
 
     } catch (error: any) {
-      logger.error({ error: error.message }, '批量操作失败');
+      logger.error({ error: error.message }, 'Batch operation failed');
       throw error;
     }
   }
 
   /**
-   * 并发处理批次
-   * @param batch 当前批次的项目
-   * @param processor 处理函数
-   * @returns 批次处理结果
+   * Process a batch concurrently
+   * @param batch Current batch items
+   * @param processor Processing function
+   * @returns Batch processing results
    */
   private async processBatchConcurrently<T, R>(
     batch: T[],
@@ -228,7 +228,7 @@ export class BatchOptimizer {
         return { 
           success: false, 
           item, 
-          error: error.message || '处理失败' 
+           error: error.message || 'Processing failed' 
         };
       } finally {
         semaphore.release();
@@ -239,10 +239,10 @@ export class BatchOptimizer {
   }
 
   /**
-   * 带重试的处理函数
-   * @param item 要处理的项目
-   * @param processor 处理函数
-   * @returns 处理结果
+   * Processing function with retries
+   * @param item Item being processed
+   * @param processor Processing function
+   * @returns Processing result
    */
   private async processWithRetry<T, R>(
     item: T,
@@ -254,7 +254,7 @@ export class BatchOptimizer {
       try {
         // 设置超时
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('操作超时')), this.config.timeoutMs);
+           setTimeout(() => reject(new Error('Operation timed out')), this.config.timeoutMs);
         });
 
         const result = await Promise.race([
@@ -273,7 +273,7 @@ export class BatchOptimizer {
             maxAttempts: this.config.retryAttempts,
             error: error.message,
             retryDelay
-          }, '处理失败，准备重试');
+           }, 'Processing failed, preparing to retry');
           
           await this.delay(retryDelay);
         }
@@ -284,17 +284,17 @@ export class BatchOptimizer {
   }
 
   /**
-   * 延迟函数
-   * @param ms 延迟毫秒数
+   * Delay helper
+   * @param ms Delay in milliseconds
    */
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
-   * 动态调整批量配置
-   * @param memoryUsage 当前内存使用情况
-   * @param processingTime 处理时间
+   * Dynamically adjust batch configuration
+   * @param memoryUsage Current memory usage
+   * @param processingTime Processing time
    */
   adaptiveOptimization(memoryUsage: number, processingTime: number): void {
     // 根据内存使用情况调整批次大小
@@ -304,7 +304,7 @@ export class BatchOptimizer {
       logger.info({
         newBatchSize: this.config.batchSize,
         newDelay: this.config.delay
-      }, '由于内存压力，调整批量配置');
+      }, 'Adjusting batch configuration due to memory pressure');
     }
 
     // 根据处理时间调整并发数
@@ -312,14 +312,14 @@ export class BatchOptimizer {
       this.config.maxConcurrency = Math.max(1, this.config.maxConcurrency - 1);
       logger.info({
         newMaxConcurrency: this.config.maxConcurrency
-      }, '由于处理时间过长，降低并发数');
+       }, 'Reducing concurrency due to long processing time');
     } else if (processingTime < 2000 && memoryUsage < this.config.memoryThreshold * 0.5) {
       this.config.maxConcurrency = Math.min(5, this.config.maxConcurrency + 1);
       this.config.batchSize = Math.min(10, this.config.batchSize + 1);
       logger.info({
         newMaxConcurrency: this.config.maxConcurrency,
         newBatchSize: this.config.batchSize
-      }, '性能良好，提升并发数和批次大小');
+       }, 'Performance is good, increasing concurrency and batch size');
     }
   }
 }

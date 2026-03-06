@@ -201,7 +201,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 移除最少使用的项（LRU）
+   * Remove the least recently used entry (LRU)
    */
   private evictLRU(): void {
     let lruKey: string | null = null;
@@ -221,7 +221,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 更新统计信息
+   * Update cache statistics
    */
   private updateStats(): void {
     this.stats.size = this.cache.size;
@@ -230,7 +230,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 更新命中率
+   * Update hit rate
    */
   private updateHitRate(): void {
     const total = this.stats.hits + this.stats.misses;
@@ -238,15 +238,15 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 更新内存使用量估算
+   * Update estimated memory usage
    */
   private updateMemoryUsage(): void {
-    // 简单估算内存使用量
-    this.stats.memoryUsage = this.cache.size * 1024; // 假设每项1KB
+    // Simple estimation of memory usage
+    this.stats.memoryUsage = this.cache.size * 1024; // Assume 1KB per entry
   }
 
   /**
-   * 销毁缓存
+   * Destroy cache
    */
   destroy(): void {
     if (this.cleanupTimer) {
@@ -258,13 +258,13 @@ export class MemoryCache<T = any> {
 }
 
 /**
- * 全局缓存管理器
+ * Global cache manager
  */
 class CacheManager {
   private caches = new Map<string, MemoryCache>();
 
   /**
-   * 获取或创建缓存实例
+   * Get or create a cache instance
    */
   getCache<T = any>(name: string, config?: Partial<CacheConfig>): MemoryCache<T> {
     if (!this.caches.has(name)) {
@@ -274,7 +274,7 @@ class CacheManager {
   }
 
   /**
-   * 销毁指定缓存
+   * Destroy a named cache
    */
   destroyCache(name: string): boolean {
     const cache = this.caches.get(name);
@@ -286,7 +286,7 @@ class CacheManager {
   }
 
   /**
-   * 销毁所有缓存
+   * Destroy all caches
    */
   destroyAll(): void {
     for (const cache of this.caches.values()) {
@@ -296,7 +296,7 @@ class CacheManager {
   }
 
   /**
-   * 获取所有缓存统计
+   * Get statistics for all caches
    */
   getAllStats(): Record<string, CacheStats> {
     const stats: Record<string, CacheStats> = {};
@@ -307,8 +307,8 @@ class CacheManager {
   }
 }
 
-// 导出全局缓存管理器实例
+// Export the global cache manager instance
 export const cacheManager = new CacheManager();
 
-// 导出默认缓存实例
+// Export the default cache instance
 export const defaultCache = cacheManager.getCache('default');

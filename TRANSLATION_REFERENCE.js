@@ -93,7 +93,7 @@ const SiyuanServiceTranslations = {
   '移动文档': 'Move document',
   '移动文档失败': 'Failed to move document',
 
-  // Lines  630+: Search operations
+  // Lines 630+: Search operations
   '搜索操作': 'Search Operations',
   '搜索内容': 'Search content',
   '搜索失败': 'Search failed',

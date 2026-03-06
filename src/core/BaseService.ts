@@ -1,6 +1,6 @@
 /**
- * 基础服务类
- * 提供所有服务的通用功能和接口规范
+ * Base service class
+ * Provides common functionality and interface specifications for all services
  */
 
 import logger from '../logger.js';
@@ -59,16 +59,16 @@ export abstract class BaseService {
   }
 
   /**
-   * 初始化服务
+   * Initialize service
    */
   async initialize(): Promise<void> {
     try {
-      logger.info(`正在初始化服务: ${this.serviceName} v${this.version}`);
+      logger.info(`Initializing service: ${this.serviceName} v${this.version}`);
       
       await this.onInitialize();
       
       this.isInitialized = true;
-      logger.info(`服务初始化完成: ${this.serviceName}`);
+      logger.info(`Service initialization completed: ${this.serviceName}`);
     } catch (error: any) {
       logger.error(`服务初始化失败: ${this.serviceName}`, error);
       throw error;

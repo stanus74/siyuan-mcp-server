@@ -1,6 +1,6 @@
 /**
- * 安全验证器
- * 提供统一的安全验证和权限控制功能
+ * Security validator
+ * Provides unified security validation and permission control functionality
  */
 
 import logger from '../logger.js';
@@ -55,7 +55,7 @@ export class SecurityValidator {
   }
 
   /**
-   * 验证请求上下文
+   * Validate request context
    */
   validateRequest(context: RequestContext): ValidationResult {
     const result: ValidationResult = {
@@ -70,7 +70,7 @@ export class SecurityValidator {
       // 1. IP地址检查
       if (context.ipAddress && this.config.blockedIPs.includes(context.ipAddress)) {
         result.isValid = false;
-        result.errors.push(`IP地址 ${context.ipAddress} 已被阻止`);
+        result.errors.push(`IP address ${context.ipAddress} has been blocked`);
         result.securityLevel = 'critical';
       }
 
@@ -79,7 +79,7 @@ export class SecurityValidator {
         const rateLimitResult = this.checkRateLimit(context.userId);
         if (!rateLimitResult.allowed) {
           result.isValid = false;
-          result.errors.push('请求频率超过限制');
+          result.errors.push('Request frequency exceeds limit');
           result.securityLevel = 'high';
         }
       }
@@ -88,7 +88,7 @@ export class SecurityValidator {
       if (this.config.allowedOperations.length > 0 && 
           !this.config.allowedOperations.includes(context.operation)) {
         result.isValid = false;
-        result.errors.push(`操作 ${context.operation} 不被允许`);
+        result.errors.push(`Operation ${context.operation} is not allowed`);
         result.securityLevel = 'medium';
       }
 
@@ -99,7 +99,7 @@ export class SecurityValidator {
 
     } catch (error: any) {
       result.isValid = false;
-      result.errors.push(`安全验证失败: ${error.message}`);
+      result.errors.push(`Security validation failed: ${error.message}`);
       result.securityLevel = 'critical';
       
       // 记录安全验证错误到stderr
@@ -127,7 +127,7 @@ export class SecurityValidator {
     try {
       // 基本输入验证
       if (input === null || input === undefined) {
-        result.warnings.push('输入为空');
+        result.warnings.push('Input is empty');
         return result;
       }
 
@@ -144,7 +144,7 @@ export class SecurityValidator {
         for (const pattern of dangerousPatterns) {
           if (pattern.test(input)) {
             result.isValid = false;
-            result.errors.push('输入包含潜在危险内容');
+            result.errors.push('Input contains potentially dangerous content');
             result.securityLevel = 'high';
             break;
           }
@@ -153,13 +153,13 @@ export class SecurityValidator {
 
       // 检查输入长度
       if (typeof input === 'string' && input.length > 10000) {
-        result.warnings.push('输入内容过长');
+        result.warnings.push('Input content is too long');
         result.securityLevel = 'medium';
       }
 
     } catch (error: any) {
       result.isValid = false;
-      result.errors.push(`输入验证失败: ${error.message}`);
+      result.errors.push(`Input validation failed: ${error.message}`);
       result.securityLevel = 'critical';
     }
 
@@ -229,7 +229,7 @@ export class SecurityValidator {
     };
 
     // 输出到stderr以避免污染MCP协议的stdout
-    // 完全禁用日志输出 - 用户不需要任何日志
+    // Completely disable log output - user does not need any logs
   }
 
   /**
@@ -240,14 +240,14 @@ export class SecurityValidator {
   }
 
   /**
-   * 获取当前配置
+   * Get current configuration
    */
   getConfig(): SecurityConfig {
     return { ...this.config };
   }
 
   /**
-   * 清理过期的速率限制记录
+   * Clean up expired rate limit records
    */
   cleanup(): void {
     const now = Date.now();

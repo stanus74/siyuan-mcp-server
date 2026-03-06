@@ -1,10 +1,10 @@
 /**
- * Terminal encoding processing tool
- * Fix Chinese character garbled issue in Windows terminal
+ * Terminal encoding helper
+ * Resolves Chinese character garbled output issues on Windows terminals
  */
 
 /**
- * Set Node.js process encoding
+ * Configure Node.js process encoding
  */
 function setupEncoding(): void {
   // Set standard output encoding to UTF-8
@@ -33,7 +33,7 @@ function setupEncoding(): void {
 }
 
 /**
- * Safe console output to avoid garbled text
+ * Safe console output helper to avoid garbled text
  */
 function safeLog(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
   const timestamp = new Date().toISOString();

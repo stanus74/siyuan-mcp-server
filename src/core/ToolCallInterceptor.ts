@@ -1,13 +1,13 @@
 /**
- * 工具调用拦截器
- * 负责拦截和验证所有MCP工具调用，确保遵循安全规则和依赖关系
+ * Tool call interceptor
+ * Responsible for intercepting and validating all MCP tool calls, ensuring compliance with security rules and dependencies
  */
 
 import { ToolPriorityManager, ToolCallRecord } from './ToolPriorityManager';
 import logger from '../logger';
 
 /**
- * 工具调用请求接口
+ * Tool call request interface
  */
 export interface ToolCallRequest {
   toolName: string;
@@ -17,7 +17,7 @@ export interface ToolCallRequest {
 }
 
 /**
- * 工具调用拦截结果接口
+ * Tool call interception result interface
  */
 export interface InterceptResult {
   allowed: boolean;
@@ -29,7 +29,7 @@ export interface InterceptResult {
 }
 
 /**
- * 批量调用验证结果接口
+ * Batch call validation result interface
  */
 export interface BatchValidationResult {
   valid: boolean;
@@ -40,7 +40,7 @@ export interface BatchValidationResult {
 }
 
 /**
- * 工具调用拦截器类
+ * Tool call interceptor class
  */
 export class ToolCallInterceptor {
   private priorityManager: ToolPriorityManager;
@@ -52,14 +52,14 @@ export class ToolCallInterceptor {
   }
 
   /**
-   * 拦截工具调用
+   * Intercept tool calls
    */
   async interceptToolCall(request: ToolCallRequest): Promise<InterceptResult> {
     const { toolName, parameters } = request;
     
-    logger.info(`拦截工具调用: ${toolName}`, { parameters });
+    logger.info(`Intercepted tool call: ${toolName}`, { parameters });
 
-    // 验证工具调用
+    // Validate tool call
     const validation = this.priorityManager.validateToolCall(toolName, parameters);
     
     const result: InterceptResult = {
@@ -69,69 +69,69 @@ export class ToolCallInterceptor {
       suggestions: []
     };
 
-    // 如果验证失败，提供修复建议
+    // Provide repair suggestions when validation fails
     if (!validation.valid) {
       this.blockedCalls.push(request);
       
-      // 生成建议
-      if (validation.requiredPrerequisites.length > 0) {
-        result.suggestions.push(`请先调用: ${validation.requiredPrerequisites.join(', ')}`);
+        // Generate suggestions
+if (validation.requiredPrerequisites.length > 0) {
+        result.suggestions.push(`Please call first: ${validation.requiredPrerequisites.join(', ')}`);
         result.suggestedOrder = this.priorityManager.getSuggestedCallOrder(toolName);
       }
 
-      // 参数修复建议
+      // Parameter repair suggestions
       if (toolName === 'createDoc') {
         if (!parameters?.notebook) {
-          result.suggestions.push('请提供有效的笔记本ID');
+          result.suggestions.push('Please provide a valid notebook ID');
         }
         if (!parameters?.title) {
-          result.suggestions.push('请提供有效的文档标题');
+          result.suggestions.push('Please provide a valid document title');
         }
       }
 
-      logger.warn(`工具调用被拦截: ${toolName}`, {
+      logger.warn(`Tool call intercepted: ${toolName}`, {
         errors: result.errors,
         suggestions: result.suggestions
       });
     } else {
       this.allowedCalls.push(request);
-      logger.info(`工具调用通过验证: ${toolName}`);
+      logger.info(`Tool call passed validation: ${toolName}`);
     }
 
     return result;
   }
 
   /**
-   * 验证批量调用
+   * Validate batch calls
    */
   async validateBatchCalls(calls: ToolCallRequest[]): Promise<BatchValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
     const reorderedCalls: ToolCallRequest[] = [];
 
-    // 按优先级对调用进行排序
+    // Sort calls by priority
     const callsWithPriority = calls.map(call => ({
       ...call,
       priority: this.priorityManager.getToolPriority(call.toolName)
     }));
 
-    // 按优先级排序（数字越小优先级越高）
+    // Sort by priority (smaller numbers mean higher priority)
     callsWithPriority.sort((a, b) => a.priority - b.priority);
 
-    // 验证每个调用的依赖关系
+    // Validate dependencies for each call
     for (const call of callsWithPriority) {
       const suggestedOrder = this.priorityManager.getSuggestedCallOrder(call.toolName);
       
-      // 确保依赖的工具在当前调用之前
+      // Ensure dependent tools run before the current call
       for (const requiredTool of suggestedOrder.slice(0, -1)) {
         const hasRequiredTool = reorderedCalls.some(c => c.toolName === requiredTool);
         if (!hasRequiredTool) {
-          // 查找是否在原始调用列表中
+          // Check whether the tool exists in the original call list
           const requiredCall = calls.find(c => c.toolName === requiredTool);
           if (requiredCall && !reorderedCalls.includes(requiredCall)) {
             reorderedCalls.push(requiredCall);
           } else if (!requiredCall) {
-            errors.push(`缺少必需的工具调用: ${requiredTool} (为了执行 ${call.toolName})`);
+            errors.push(`Missing required tool call: ${requiredTool} (to execute ${call.toolName})`);
           }
         }
       }
@@ -150,17 +150,17 @@ export class ToolCallInterceptor {
   }
 
   /**
-   * 获取被拦截的调用记录
-   */
-  getBlockedCalls(): ToolCallRequest[] {
-    return [...this.blockedCalls];
+ * Get intercepted call records
+ */
+getBlockedCalls(): ToolCallRequest[] {
+return [...this.blockedCalls];
   }
 
   /**
-   * 获取允许的调用记录
-   */
-  getAllowedCalls(): ToolCallRequest[] {
-    return [...this.allowedCalls];
+ * Get allowed call records
+ */
+getAllowedCalls(): ToolCallRequest[] {
+return [...this.allowedCalls];
   }
 
   /**
@@ -169,11 +169,11 @@ export class ToolCallInterceptor {
   clearHistory(): void {
     this.blockedCalls = [];
     this.allowedCalls = [];
-    logger.info('已清理拦截器调用历史');
+    logger.info('Cleared interceptor call history');
   }
 
   /**
-   * 执行安全的工具调用
+   * Execute secure tool calls
    */
   async safeToolCall(request: ToolCallRequest, executor: (req: ToolCallRequest) => Promise<any>): Promise<{
     success: boolean;
@@ -186,13 +186,13 @@ export class ToolCallInterceptor {
     if (!interceptResult.allowed) {
       return {
         success: false,
-        error: `工具调用被拦截: ${interceptResult.errors.join(', ')}`,
+        error: `Tool call intercepted: ${interceptResult.errors.join(', ')}`,
         interceptResult
       };
     }
 
     try {
-      // 使用修改后的参数（如果有）
+      // Use modified parameters when available
       const finalRequest = {
         ...request,
         parameters: interceptResult.modifiedParameters || request.parameters
@@ -200,7 +200,7 @@ export class ToolCallInterceptor {
 
       const result = await executor(finalRequest);
 
-      // 记录成功的调用
+      // Record successful calls
       this.priorityManager.recordToolCall({
         toolName: request.toolName,
         timestamp: Date.now(),
@@ -215,7 +215,7 @@ export class ToolCallInterceptor {
         interceptResult
       };
     } catch (error: any) {
-      // 记录失败的调用
+      // Record failed calls
       this.priorityManager.recordToolCall({
         toolName: request.toolName,
         timestamp: Date.now(),
@@ -233,38 +233,37 @@ export class ToolCallInterceptor {
   }
 
   /**
-   * 生成安全调用指南
+   * Generate security guide
    */
   generateSecurityGuide(): string {
-    let guide = '# MCP 工具调用安全指南\n\n';
+    let guide = '# MCP Tool Call Security Guide\n\n';
     
-    guide += '## 核心安全原则\n';
-    guide += '1. **严格依赖验证** - 所有工具调用必须满足依赖关系\n';
-    guide += '2. **参数完整性检查** - 确保所有必需参数都已提供且有效\n';
-    guide += '3. **操作顺序控制** - 按照正确的优先级顺序执行工具调用\n';
-    guide += '4. **错误处理和恢复** - 提供清晰的错误信息和修复建议\n\n';
+    guide += '## Core Security Principles\n';
+    guide += '1. **Strict Dependency Validation** - All tool calls must satisfy dependencies\n';
+    guide += '2. **Parameter Integrity Check** - Ensure all required parameters are provided and valid\n';
+    guide += '3. **Operation Order Control** - Execute tool calls in correct priority order\n';
+    guide += '4. **Error Handling and Recovery** - Provide clear error messages and repair suggestions\n\n';
 
-    guide += '## 常见拦截场景\n\n';
-    guide += '### 文档创建安全检查\n';
-    guide += '- **问题**: 直接调用 `createDoc` 而未验证笔记本\n';
-    guide += '- **解决方案**: 先调用 `listNotebooks` 和 `openNotebook`\n';
-    guide += '- **正确顺序**: `listNotebooks` → `openNotebook` → `createDoc`\n\n';
+    guide += '## Common Interception Scenarios\n\n';
+    guide += '### Document Creation Security Check\n';
+    guide += '- **Issue**: Direct call to `createDoc` without validating notebook\n';
+    guide += '- **Solution**: Call `listNotebooks` and `openNotebook` first\n';
+    guide += '- **Correct Order**: `listNotebooks` → `openNotebook` → `createDoc`\n\n';
 
-    guide += '### 参数验证失败\n';
-    guide += '- **问题**: 提供空的或无效的参数\n';
-    guide += '- **解决方案**: 确保所有必需参数都有有效值\n';
-    guide += '- **示例**: `notebook` 不能为空，`title` 必须是非空字符串\n\n';
-
+    guide += '### Parameter Validation Failure\n';
+    guide += '- **Issue**: Providing empty or invalid parameters\n';
+    guide += '- **Solution**: Ensure all required parameters have valid values\n';
+    guide += '- **Example**: `notebook` cannot be empty, `title` must be a non-empty string\n\n';
     guide += this.priorityManager.generateCallGuide();
 
     return guide;
   }
 
   /**
-   * 获取拦截统计信息
-   */
-  getInterceptStatistics(): {
-    totalIntercepted: number;
+ * Get interception statistics
+ */
+getInterceptStatistics(): {
+totalIntercepted: number;
     blockedCalls: number;
     allowedCalls: number;
     mostBlockedTool: string | null;
@@ -288,11 +287,11 @@ export class ToolCallInterceptor {
       }
     }
 
-    // 统计常见错误（这里简化处理）
+    // Simplified common error statistics
     const commonErrors = [
-      '缺少依赖工具的调用记录',
-      '参数验证失败',
-      '违反安全规则'
+      'Missing call record for required tool',
+      'Parameter validation failed',
+      'Security rule violation'
     ];
 
     return {
