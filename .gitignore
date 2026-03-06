@@ -70,18 +70,18 @@ PUBLISH_GUIDE.md
 # CodeBuddy files
 .codebuddy/
 
-# 备份文件
+# Backup files
 *.backup
 *.bak
 *.old
 
-# 接口文件备份
+# Interface file backups
 src/interfaces/enhanced-siyuan-types.ts.backup
 
-# 工具文件备份
+# Tool file backups
 bak/
 
-# 测试和临时文件
+# Test and temporary files
 organize-tools.js
 
 #other
