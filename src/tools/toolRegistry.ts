@@ -1,6 +1,6 @@
 /**
- * 工具注册表
- * 管理所有标准化工具的注册、发现和执行
+ * Tool Registry
+ * Manages registration, discovery, and execution of all standardized tools
  */
 
 import logger from '../logger.js';
@@ -15,7 +15,7 @@ import { cacheManager } from '../utils/cache.js';
 import { performanceOptimizer } from '../utils/performanceOptimizer.js';
 
 /**
- * 工具注册表实现
+ * Tool Registry Implementation
  */
 export class StandardToolRegistry implements ToolRegistry {
   private tools = new Map<string, StandardTool>();
@@ -28,19 +28,19 @@ export class StandardToolRegistry implements ToolRegistry {
   }>();
 
   /**
-   * 注册工具
+   * Register a tool
    */
   register(tool: StandardTool): void {
     const toolDefinition = tool.getToolDefinition();
     const toolName = toolDefinition.name;
 
     if (this.tools.has(toolName)) {
-      logger.warn(`工具 '${toolName}' 已存在，将被覆盖`);
+      logger.warn(`Tool '${toolName}' already exists, will be overridden`);
     }
 
     this.tools.set(toolName, tool);
     
-    // 初始化统计信息
+    // Initialize statistics
     this.executionStats.set(toolName, {
       totalExecutions: 0,
       successCount: 0,
@@ -49,44 +49,44 @@ export class StandardToolRegistry implements ToolRegistry {
       lastExecuted: new Date()
     });
 
-    logger.info(`工具 '${toolName}' 注册成功`);
+    logger.info(`Tool '${toolName}' registered successfully`);
   }
 
   /**
-   * 注销工具
+   * Unregister a tool
    */
   unregister(toolName: string): void {
     if (this.tools.delete(toolName)) {
       this.executionStats.delete(toolName);
-      logger.info(`工具 '${toolName}' 注销成功`);
+      logger.info(`Tool '${toolName}' unregistered successfully`);
     } else {
-      logger.warn(`工具 '${toolName}' 不存在，无法注销`);
+      logger.warn(`Tool '${toolName}' does not exist, cannot unregister`);
     }
   }
 
   /**
-   * 获取工具
+   * Get a tool
    */
   get(toolName: string): StandardTool | undefined {
     return this.tools.get(toolName);
   }
 
   /**
-   * 列出所有工具
+   * List all tools
    */
   list(): StandardTool[] {
     return Array.from(this.tools.values());
   }
 
   /**
-   * 获取所有工具定义（MCP格式）
+   * Get all tool definitions (MCP format)
    */
   getAllToolDefinitions() {
     return Array.from(this.tools.values()).map(tool => tool.getToolDefinition());
   }
 
   /**
-   * 获取工具的AI使用元数据
+   * Get AI usage metadata for a tool
    */
   getAIUsageMetadata(toolName: string) {
     const tool = this.tools.get(toolName);
@@ -97,7 +97,7 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 获取所有工具的AI使用元数据
+   * Get AI usage metadata for all tools
    */
   getAllAIUsageMetadata() {
     const metadata: Record<string, any> = {};
@@ -108,7 +108,7 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 根据使用场景推荐工具
+   * Recommend tools based on usage scenario
    */
   recommendToolsForScenario(scenario: string): string[] {
     const recommendations: Array<{ toolName: string; relevance: number }> = [];
@@ -121,12 +121,12 @@ export class StandardToolRegistry implements ToolRegistry {
       const scenarioLower = scenario.toLowerCase();
       const whenToUseLower = aiUsage.whenToUse.toLowerCase();
 
-      // 检查whenToUse中是否包含场景关键词
+      // Check if 'whenToUse' contains scenario keywords
       if (whenToUseLower.includes(scenarioLower)) {
         relevance += 10;
       }
 
-      // 检查示例中是否包含场景
+      // Check if examples contain the scenario
       for (const example of aiUsage.examples) {
         if (example.toLowerCase().includes(scenarioLower)) {
           relevance += 5;
@@ -138,14 +138,14 @@ export class StandardToolRegistry implements ToolRegistry {
       }
     }
 
-    // 按相关性排序
+    // Sort by relevance
     recommendations.sort((a, b) => b.relevance - a.relevance);
 
     return recommendations.map(r => r.toolName);
   }
 
   /**
-   * 获取工具选择建议
+   * Get tool selection advice
    */
   getToolSelectionAdvice(userIntent: string) {
     const intentLower = userIntent.toLowerCase();
@@ -159,28 +159,28 @@ export class StandardToolRegistry implements ToolRegistry {
       reasoning: []
     };
 
-    // 分析用户意图并推荐工具
+    // Analyze user intent and recommend tools
     for (const [name, tool] of this.tools.entries()) {
       const aiUsage = tool.getAIUsageMetadata();
       if (!aiUsage) continue;
 
-      // 检查whenToUse
+      // Check 'whenToUse'
       if (aiUsage.whenToUse.toLowerCase().includes(intentLower)) {
         advice.recommended.push(name);
-        advice.reasoning.push(`工具 '${name}' 的使用场景包含：${aiUsage.whenToUse}`);
+        advice.reasoning.push(`Tool '${name}' use scenario includes: ${aiUsage.whenToUse}`);
       }
 
-      // 检查示例
+      // Check examples
       for (const example of aiUsage.examples) {
         if (example.toLowerCase().includes(intentLower)) {
           if (!advice.recommended.includes(name)) {
             advice.recommended.push(name);
           }
-          advice.reasoning.push(`工具 '${name}' 的示例：${example}`);
+          advice.reasoning.push(`Tool '${name}' example: ${example}`);
         }
       }
 
-      // 收集替代工具
+      // Collect alternative tools
       if (aiUsage.alternativeTools) {
         for (const altTool of aiUsage.alternativeTools) {
           if (!advice.alternatives.includes(altTool)) {
@@ -190,7 +190,7 @@ export class StandardToolRegistry implements ToolRegistry {
       }
     }
 
-    // 去重
+    // Deduplicate
     advice.recommended = [...new Set(advice.recommended)];
     advice.alternatives = [...new Set(advice.alternatives)];
 
@@ -198,55 +198,55 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 执行工具
+   * Execute a tool
    */
   async execute(toolName: string, parameters: Record<string, any>): Promise<StandardToolResponse> {
     const startTime = Date.now();
     
     try {
-      // 检查工具是否存在
+      // Check if tool exists
       const tool = this.tools.get(toolName);
       if (!tool) {
         throw new StandardToolError(
           ToolErrorType.RESOURCE_NOT_FOUND,
-          `工具 '${toolName}' 不存在`,
+          `Tool '${toolName}' does not exist`,
           'TOOL_NOT_FOUND',
           { toolName, availableTools: Array.from(this.tools.keys()) }
         );
       }
 
-      // 记录执行开始
+      // Log execution start
       logger.info({
         toolName,
         parameters,
         requestId: `${toolName}_${Date.now()}`
-      }, '开始执行工具');
+      }, 'Starting tool execution');
 
-      // 使用性能优化器执行工具
+      // Use performance optimizer to execute tool
       const result = await performanceOptimizer.optimizeOperation(async () => {
         return await tool.executeWithStandardization(parameters);
       });
 
-      // 更新统计信息
+      // Update execution statistics
       this.updateExecutionStats(toolName, Date.now() - startTime, true);
 
-      // 记录执行成功
+      // Log execution success
       logger.info({
         toolName,
         success: result.success,
         executionTime: result.executionTime,
         message: result.message
-      }, '工具执行完成');
+      }, 'Tool execution completed');
 
       return result;
 
     } catch (error: any) {
       const executionTime = Date.now() - startTime;
       
-      // 更新统计信息
+      // Update execution statistics
       this.updateExecutionStats(toolName, executionTime, false);
 
-      // 处理标准化错误
+      // Handle standardized errors
       if (error instanceof StandardToolError) {
         logger.error({
           toolName,
@@ -254,21 +254,21 @@ export class StandardToolRegistry implements ToolRegistry {
           errorCode: error.code,
           message: error.message,
           details: error.details
-        }, '工具执行失败');
+        }, 'Tool execution failed');
 
         return error.toStandardResponse(toolName, executionTime);
       }
 
-      // 处理其他错误
+      // Handle other errors
       logger.error({
         toolName,
         error: error.message,
         stack: error.stack
-      }, '工具执行发生未知错误');
+      }, 'Tool execution encountered an unknown error');
 
       const standardError = new StandardToolError(
         ToolErrorType.INTERNAL_ERROR,
-        error.message || '工具执行失败',
+        error.message || 'Tool execution failed',
         'EXECUTION_FAILED',
         { originalError: error.toString() }
       );
@@ -278,13 +278,13 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 批量执行工具
+   * Batch execute tools
    */
   async executeBatch(requests: Array<{ toolName: string; parameters: Record<string, any> }>): Promise<StandardToolResponse[]> {
     const results: StandardToolResponse[] = [];
     
-    // 使用并发控制执行批量请求
-    const batchSize = 3; // 限制并发数
+    // Execute batch requests with concurrency control
+    const batchSize = 3; // Limit concurrency
     for (let i = 0; i < requests.length; i += batchSize) {
       const batch = requests.slice(i, i + batchSize);
       const batchPromises = batch.map(request => 
@@ -299,7 +299,7 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 获取工具执行统计
+   * Get tool execution statistics
    */
   getExecutionStats(toolName?: string) {
     if (toolName) {
@@ -314,7 +314,7 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 获取工具健康状态
+   * Get tool health status
    */
   getHealthStatus() {
     const totalTools = this.tools.size;
@@ -343,7 +343,7 @@ export class StandardToolRegistry implements ToolRegistry {
   }
 
   /**
-   * 更新执行统计信息
+   * Update execution statistics
    */
   private updateExecutionStats(toolName: string, executionTime: number, success: boolean): void {
     const stats = this.executionStats.get(toolName);
@@ -358,13 +358,13 @@ export class StandardToolRegistry implements ToolRegistry {
       stats.failureCount++;
     }
 
-    // 更新平均执行时间
+    // Update average execution time
     const totalTime = stats.averageExecutionTime * (stats.totalExecutions - 1) + executionTime;
     stats.averageExecutionTime = Math.round(totalTime / stats.totalExecutions);
   }
 
   /**
-   * 清理统计信息
+   * Clear statistics
    */
   clearStats(): void {
     for (const stats of this.executionStats.values()) {
@@ -373,18 +373,18 @@ export class StandardToolRegistry implements ToolRegistry {
       stats.failureCount = 0;
       stats.averageExecutionTime = 0;
     }
-    logger.info('工具执行统计信息已清理');
+    logger.info('Tool execution statistics cleared');
   }
 
   /**
-   * 销毁注册表
+   * Destroy registry
    */
   destroy(): void {
     this.tools.clear();
     this.executionStats.clear();
-    logger.info('工具注册表已销毁');
+    logger.info('Tool registry destroyed');
   }
 }
 
-// 导出全局工具注册表实例
+// Export global tool registry instance
 export const toolRegistry = new StandardToolRegistry();

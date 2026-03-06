@@ -1,12 +1,12 @@
 /**
- * 缓存管理器
- * 提供内存缓存和性能优化功能
+ * Cache Manager
+ * Provides memory caching and performance optimization features
  */
 
 import logger from '../logger.js';
 
 /**
- * 缓存项接口
+ * Cache item interface
  */
 interface CacheItem<T> {
   value: T;
@@ -17,7 +17,7 @@ interface CacheItem<T> {
 }
 
 /**
- * 缓存配置接口
+ * Cache configuration interface
  */
 export interface CacheConfig {
   maxSize: number;
@@ -27,7 +27,7 @@ export interface CacheConfig {
 }
 
 /**
- * 缓存统计接口
+ * Cache statistics interface
  */
 export interface CacheStats {
   hits: number;
@@ -38,17 +38,17 @@ export interface CacheStats {
 }
 
 /**
- * 默认缓存配置
+ * Default cache configuration
  */
 const DEFAULT_CACHE_CONFIG: CacheConfig = {
   maxSize: 1000,
-  defaultTTL: 300000, // 5分钟
-  cleanupInterval: 60000, // 1分钟
+  defaultTTL: 300000, // 5 minutes
+  cleanupInterval: 60000, // 1 minute
   enableStats: true
 };
 
 /**
- * 内存缓存管理器
+ * Memory cache manager
  */
 export class MemoryCache<T = any> {
   private cache = new Map<string, CacheItem<T>>();
@@ -66,18 +66,18 @@ export class MemoryCache<T = any> {
       memoryUsage: 0
     };
 
-    // 启动定期清理
+    // Start periodic cleanup
     this.startCleanup();
   }
 
   /**
-   * 设置缓存项
+   * Set cache item
    */
   set(key: string, value: T, ttl?: number): void {
     const now = Date.now();
     const itemTTL = ttl || this.config.defaultTTL;
 
-    // 如果缓存已满，移除最少使用的项
+    // If cache is full, remove the least used items
     if (this.cache.size >= this.config.maxSize && !this.cache.has(key)) {
       this.evictLRU();
     }
@@ -94,7 +94,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 获取缓存项
+   * Get cache item
    */
   get(key: string): T | undefined {
     const item = this.cache.get(key);
@@ -107,7 +107,7 @@ export class MemoryCache<T = any> {
 
     const now = Date.now();
     
-    // 检查是否过期
+    // Check if expired
     if (now - item.timestamp > item.ttl) {
       this.cache.delete(key);
       this.stats.misses++;
@@ -115,7 +115,7 @@ export class MemoryCache<T = any> {
       return undefined;
     }
 
-    // 更新访问信息
+    // Update access information
     item.accessCount++;
     item.lastAccessed = now;
     
@@ -126,7 +126,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 删除缓存项
+   * Delete cache item
    */
   delete(key: string): boolean {
     const result = this.cache.delete(key);
@@ -135,7 +135,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 清空缓存
+   * Clear cache
    */
   clear(): void {
     this.cache.clear();
@@ -145,7 +145,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 检查缓存项是否存在
+   * Check if cache item exists
    */
   has(key: string): boolean {
     const item = this.cache.get(key);

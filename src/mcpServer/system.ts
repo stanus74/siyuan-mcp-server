@@ -24,7 +24,7 @@ async function checkSystemHealth(): Promise<{ status: string; detail: string }> 
     
     const text = await res.text();
     
-    // 处理空响应
+    // Handle empty response
     if (!text.trim()) {
       return { status: 'ok', detail: 'Empty response' };
     }
@@ -37,7 +37,7 @@ async function checkSystemHealth(): Promise<{ status: string; detail: string }> 
       return { status: 'degraded', detail: `Invalid JSON response: ${text.substring(0, 100)}` };
     }
     
-    // 检查思源API标准响应格式
+    // Check Siyuan API standard response format
     if (result.code !== undefined && result.code !== 0) {
       return { status: 'degraded', detail: `Siyuan API error: ${result.msg}` };
     }

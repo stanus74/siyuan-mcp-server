@@ -1,5 +1,5 @@
 /**
- * Token优化工具 - 减少AI交互中的token消耗
+ * Token optimization tool - reduce token consumption in AI interactions
  */
 
 export interface TokenOptimizationConfig {
@@ -23,24 +23,24 @@ export class TokenOptimizer {
   }
 
   /**
-   * 压缩文档内容，保留关键信息
+   * Compress document content, preserve key information
    */
   compressContent(content: string): string {
     if (content.length <= this.config.maxContentLength) {
       return content;
     }
 
-    // 提取标题和关键段落
+    // Extract titles and key paragraphs
     const lines = content.split('\n');
     const important: string[] = [];
     
     lines.forEach(line => {
       const trimmed = line.trim();
-      // 保留标题
+      // Preserve titles
       if (trimmed.startsWith('#')) {
         important.push(trimmed);
       }
-      // 保留关键词密集的段落
+      // Preserve keyword-dense paragraphs
       else if (this.isImportantParagraph(trimmed)) {
         important.push(trimmed.substring(0, 100) + '...');
       }
@@ -50,13 +50,13 @@ export class TokenOptimizer {
   }
 
   /**
-   * 生成简洁摘要
+   * Generate concise summary
    */
   generateSummary(content: string): string {
     const compressed = this.compressContent(content);
     const sentences = compressed.split(/[。！？.!?]/).filter(s => s.trim());
     
-    // 选择最重要的句子
+    // Select the most important sentences
     const important = sentences
       .filter(s => s.length > 10 && s.length < 100)
       .slice(0, 3)
@@ -66,7 +66,7 @@ export class TokenOptimizer {
   }
 
   /**
-   * 提取关键词
+   * Extract keywords
    */
   extractKeywords(content: string): string[] {
     const text = content.toLowerCase()
@@ -86,7 +86,7 @@ export class TokenOptimizer {
   }
 
   /**
-   * 优化搜索结果
+   * Optimize search results
    */
   optimizeSearchResults(results: any[]): any[] {
     return results.slice(0, 5).map(result => ({
@@ -98,18 +98,18 @@ export class TokenOptimizer {
   }
 
   /**
-   * 批量操作结果摘要
+   * Batch operation result summary
    */
   summarizeBatchResults(results: any[]): string {
     const success = results.filter(r => r.success).length;
     const total = results.length;
     const errors = results.filter(r => !r.success).length;
 
-    return `批量操作完成: ${success}/${total} 成功${errors > 0 ? `, ${errors}个错误` : ''}`;
+    return `Batch operation completed: ${success}/${total} succeeded${errors > 0 ? `, ${errors} errors` : ''}`;
   }
 
   isImportantParagraph(text: string): boolean {
-    const keywords = ['重要', '关键', '核心', '主要', '总结', '结论'];
+    const keywords = ['important', 'critical', 'core', 'main', 'summary', 'conclusion'];
     return keywords.some(keyword => text.includes(keyword)) || text.length > 50;
   }
 

@@ -1,6 +1,6 @@
 /**
- * 思源笔记服务
- * 基于BaseService的标准化思源笔记API服务
+ * SiYuan Service
+ * Standardized SiYuan Note API service based on BaseService
  */
 
 import { BaseService } from '../core/BaseService.js';
@@ -24,7 +24,7 @@ import type { AxiosInstance } from 'axios';
 import logger from '../logger.js';
 
 /**
- * 思源笔记服务配置接口
+ * SiYuan Service Configuration Interface
  */
 export interface SiyuanServiceConfig extends BaseConfig {
   autoDiscoverPort?: boolean;
@@ -33,7 +33,7 @@ export interface SiyuanServiceConfig extends BaseConfig {
 }
 
 /**
- * 思源笔记服务类
+ * SiYuan Service Class
  */
 export class SiyuanService extends BaseService {
   private httpClient!: AxiosInstance;
@@ -50,10 +50,10 @@ export class SiyuanService extends BaseService {
   }
 
   /**
-   * 初始化服务
+   * Initialize service
    */
   protected async onInitialize(): Promise<void> {
-    // 创建HTTP客户端
+    // Create HTTP client
     this.httpClient = axios.create({
       baseURL: this.serviceConfig.baseURL,
       timeout: this.serviceConfig.requestTimeout,

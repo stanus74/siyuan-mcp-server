@@ -1,56 +1,56 @@
 /**
- * 终端编码处理工具
- * 解决Windows终端中文乱码问题
+ * Terminal encoding processing tool
+ * Fix Chinese character garbled issue in Windows terminal
  */
 
 /**
- * 设置Node.js进程的编码
+ * Set Node.js process encoding
  */
 function setupEncoding(): void {
-  // 设置标准输出编码为UTF-8
+  // Set standard output encoding to UTF-8
   if (process.stdout.setEncoding) {
     process.stdout.setEncoding('utf8');
   }
   
-  // 设置标准错误输出编码为UTF-8
+  // Set standard error output encoding to UTF-8
   if (process.stderr.setEncoding) {
     process.stderr.setEncoding('utf8');
   }
   
-  // 设置环境变量
+  // Set environment variables
   process.env.NODE_OPTIONS = process.env.NODE_OPTIONS || '--max-old-space-size=4096';
   
-  // Windows特定设置
+  // Windows-specific settings
   if (process.platform === 'win32') {
-    // 尝试设置控制台代码页
+    // Try to set console code page
     try {
       const { execSync } = require('child_process');
       execSync('chcp 65001', { stdio: 'ignore' });
     } catch (error) {
-      // 忽略错误，继续执行
+      // Ignore errors and continue execution
     }
   }
 }
 
 /**
- * 安全的控制台输出，避免乱码
+ * Safe console output to avoid garbled text
  */
 function safeLog(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
   const timestamp = new Date().toISOString();
   const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
   
   try {
-    // MCP协议要求：所有日志必须输出到stderr，不能污染stdout
-    // 完全禁用日志输出 - 用户不需要任何日志
+    // MCP protocol requirement: all logs must output to stderr, cannot pollute stdout
+    // Completely disable log output - users don't need any logs
   } catch (error) {
-    // 如果出现编码问题，使用ASCII安全输出
+    // If encoding issues occur, use ASCII-safe output
     const safeMessage = message.replace(/[^\x00-\x7F]/g, '?');
-    // 完全禁用日志输出 - 用户不需要任何日志
+    // Completely disable log output - users don't need any logs
   }
 }
 
 /**
- * 将中文消息转换为英文，避免乱码
+ * Convert Chinese messages to English to avoid garbled text
  */
 function toEnglishMessage(chineseMessage: string): string {
   const messageMap: Record<string, string> = {

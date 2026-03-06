@@ -1,24 +1,24 @@
 /**
- * 性能优化器 - 简化版
- * 专门针对低参数模型环境进行内存管理和性能优化
+ * Performance optimizer - simplified version
+ * Specialized memory management and performance optimization for low-parameter model environments
  */
 
 import logger from '../logger.js';
 import { cacheManager } from './cache.js';
 
 /**
- * 性能配置接口
+ * Performance configuration interface
  */
 export interface PerformanceConfig {
-  memoryThreshold: number;        // 内存阈值（MB）
-  gcInterval: number;             // 垃圾回收间隔（毫秒）
-  enableAdaptiveOptimization: boolean; // 启用自适应优化
-  lowMemoryMode: boolean;         // 低内存模式
-  maxConcurrentOperations: number; // 最大并发操作数
+  memoryThreshold: number;        // Memory threshold (MB)
+  gcInterval: number;             // Garbage collection interval (milliseconds)
+  enableAdaptiveOptimization: boolean; // Enable adaptive optimization
+  lowMemoryMode: boolean;         // Low memory mode
+  maxConcurrentOperations: number; // Maximum concurrent operations
 }
 
 /**
- * 默认性能配置
+ * Default performance configuration
  */
 export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
   memoryThreshold: 100,
@@ -29,7 +29,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
 };
 
 /**
- * 性能优化器类
+ * Performance optimizer class
  */
 export class PerformanceOptimizer {
   private config: PerformanceConfig;
@@ -43,10 +43,10 @@ export class PerformanceOptimizer {
   }
 
   /**
-   * 启动性能监控
+   * Start performance monitoring
    */
   private startPerformanceMonitoring(): void {
-    // 定期垃圾回收
+    // Periodic garbage collection
     if (this.config.gcInterval > 0) {
       this.gcTimer = setInterval(() => {
         this.performGarbageCollection();
@@ -55,7 +55,7 @@ export class PerformanceOptimizer {
   }
 
   /**
-   * 执行垃圾回收
+   * Perform garbage collection
    */
   private performGarbageCollection(): void {
     const memUsage = process.memoryUsage();
@@ -64,18 +64,18 @@ export class PerformanceOptimizer {
     if (heapUsedMB > this.config.memoryThreshold) {
       if (global.gc) {
         global.gc();
-        logger.info(`执行垃圾回收，内存使用: ${heapUsedMB}MB`);
+        logger.info(`Perform garbage collection, memory usage: ${heapUsedMB}MB`);
       } else {
-        logger.warn('垃圾回收不可用，请使用 --expose-gc 启动参数');
+        logger.warn('Garbage collection not available, please use --expose-gc startup parameter');
       }
     }
   }
 
   /**
-   * 优化操作执行
+   * Optimize operation execution
    */
   async optimizeOperation<T>(operation: () => Promise<T>): Promise<T> {
-    // 如果达到最大并发数，等待
+    // If maximum concurrency reached, wait
     while (this.activeOperations >= this.config.maxConcurrentOperations) {
       await new Promise(resolve => setTimeout(resolve, 10));
     }
@@ -91,7 +91,7 @@ export class PerformanceOptimizer {
   }
 
   /**
-   * 获取当前内存使用情况
+   * Get current memory usage
    */
   getMemoryUsage(): { heapUsed: number; heapTotal: number; external: number; rss: number } {
     const memUsage = process.memoryUsage();
@@ -104,7 +104,7 @@ export class PerformanceOptimizer {
   }
 
   /**
-   * 检查是否应该启用低内存模式
+   * Check if low memory mode should be enabled
    */
   shouldUseLowMemoryMode(): boolean {
     const memUsage = this.getMemoryUsage();
@@ -112,7 +112,7 @@ export class PerformanceOptimizer {
   }
 
   /**
-   * 销毁优化器
+   * Destroy optimizer
    */
   destroy(): void {
     if (this.gcTimer) {
@@ -122,11 +122,11 @@ export class PerformanceOptimizer {
   }
 }
 
-// 导出全局性能优化器实例
+// Export global performance optimizer instance
 export const performanceOptimizer = new PerformanceOptimizer();
 
 /**
- * 内存优化装饰器
+ * Memory optimization decorator
  */
 function memoryOptimized<T extends (...args: any[]) => Promise<any>>(
   target: T,
@@ -135,7 +135,7 @@ function memoryOptimized<T extends (...args: any[]) => Promise<any>>(
   return (async (...args: any[]) => {
     const { cacheKey, ttl = 300000 } = options;
     
-    // 如果提供了缓存键，尝试从缓存获取
+    // If a cache key is provided, try to get from cache
     if (cacheKey) {
       const cache = cacheManager.getCache('memoryOptimized');
       const key = `${cacheKey}_${JSON.stringify(args)}`;
@@ -145,13 +145,13 @@ function memoryOptimized<T extends (...args: any[]) => Promise<any>>(
         return cached;
       }
       
-      // 执行操作并缓存结果
+      // Execute operation and cache result
       const result = await performanceOptimizer.optimizeOperation(() => target(...args));
       cache.set(key, result, ttl);
       return result;
     }
     
-    // 直接执行优化操作
+    // Directly execute optimization operation
     return await performanceOptimizer.optimizeOperation(() => target(...args));
   }) as T;
 }
