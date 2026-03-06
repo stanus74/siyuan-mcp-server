@@ -13,7 +13,7 @@ export class ContextManager {
     });
   }
 
-  // 会话管理
+  // Session Management
   async createSession(userId?: string): Promise<SessionContext> {
     return await contextStore.createSession(userId);
   }
@@ -36,7 +36,7 @@ export class ContextManager {
     return key ? session.data[key] : session.data;
   }
 
-  // 工具返回上下文管理
+  // Tool Return Context Management
   async recordToolExecution(
     toolName: string,
     requestId: string,
@@ -62,7 +62,7 @@ export class ContextManager {
     return await contextStore.getToolReturns(sessionId, toolName, limit);
   }
 
-  // 引用上下文管理
+  // Reference Context Management
   async addBlockReference(sessionId: string, blockId: string): Promise<void> {
     try {
       const blockData = await this.siyuanClient.blocks.getBlock(blockId);
@@ -89,7 +89,7 @@ export class ContextManager {
 
   async addDocumentReference(sessionId: string, docId: string): Promise<void> {
     try {
-      // 获取文档信息
+      // Get document information
       const docInfo = await this.siyuanClient.request('/api/filetree/getDoc', { id: docId });
       const docData = docInfo?.data || docInfo;
       const context: ReferenceContext = {
@@ -130,7 +130,7 @@ export class ContextManager {
     return await contextStore.getReferences(sessionId, type);
   }
 
-  // 上下文合并策略
+  // Context Merging Strategy
   async mergeContexts(sessionId: string, strategy: 'recent' | 'relevant' | 'all' = 'recent'): Promise<{
     session: SessionContext | null;
     toolReturns: ToolReturnContext[];

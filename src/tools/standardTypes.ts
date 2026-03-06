@@ -1,12 +1,12 @@
 /**
- * 标准化工具类型定义
- * 确保MCP AI模块能够准确调用不同函数
+ * Standardized Tool Type Definition
+ * Ensure that MCP AI module can accurately invoke different functions
  */
 
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
 /**
- * 标准响应接口 - 统一所有工具的返回格式
+ * Standard Response Interface - Unified return format for all tools
  */
 export interface StandardToolResponse {
   success: boolean;

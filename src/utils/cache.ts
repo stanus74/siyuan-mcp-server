@@ -161,14 +161,14 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 获取缓存统计
+   * Get cache statistics
    */
   getStats(): CacheStats {
     return { ...this.stats };
   }
 
   /**
-   * 启动定期清理
+   * Start periodic cleanup
    */
   private startCleanup(): void {
     if (this.cleanupTimer) {
@@ -181,7 +181,7 @@ export class MemoryCache<T = any> {
   }
 
   /**
-   * 清理过期项
+   * Clean up expired items
    */
   private cleanup(): void {
     const now = Date.now();
@@ -195,7 +195,7 @@ export class MemoryCache<T = any> {
     }
 
     if (removedCount > 0) {
-      logger.debug(`缓存清理完成，移除 ${removedCount} 个过期项`);
+      logger.debug(`Cache cleanup completed, removed ${removedCount} expired items`);
       this.updateStats();
     }
   }

@@ -17,7 +17,7 @@ import { AdvancedSearchService } from '../services/advanced-search-service';
 
 // 创建客户端实例
 const siyuanClient = createSiyuanClient({
-  baseURL: process.env.SIYUAN_API_URL || undefined,
+  baseURL: process.env.SIYUAN_BASE_URL || undefined,
   token: process.env.SIYUAN_TOKEN || '',
   autoDiscoverPort: true
 });

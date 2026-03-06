@@ -265,7 +265,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             sessionId: { type: 'string', description: '会话ID' },
             key: { type: 'string', description: '数据键' },
-            value: { description: '数据值' }
+            value: { type: 'string', description: '数据值' }
           },
           required: ['sessionId', 'key', 'value']
         }

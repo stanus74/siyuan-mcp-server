@@ -2,7 +2,7 @@ import { createSiyuanClient } from '../siyuanClient';
 import { contextManager } from '../contextStore/manager';
 import logger from '../logger';
 
-// MCP提示模板定义
+// MCP Prompt Template Definition
 export interface MCPPrompt {
   name: string;
   description: string;
@@ -15,12 +15,12 @@ export interface MCPPrompt {
   }>;
 }
 
-// 提示模板变量
+// Prompt Template Variables
 export interface PromptVariables {
   [key: string]: any;
 }
 
-// 提示模板结果
+// Prompt Template Result
 export interface PromptResult {
   messages: Array<{
     role: 'system' | 'user' | 'assistant';
@@ -46,9 +46,9 @@ export class PromptTemplateManager {
     this.initializeTemplates();
   }
 
-  // 初始化内置模板
+  // Initialize Built-in Templates
   private initializeTemplates() {
-    // 笔记搜索助手
+    // Note Search Assistant
     this.templates.set('note-search-assistant', async (variables) => {
       const { query, context = '', limit = 10 } = variables;
       
@@ -60,7 +60,7 @@ export class PromptTemplateManager {
             `- ${r.content?.substring(0, 100)}... (${r.path})`
           ).join('\n');
         } catch (error) {
-          searchResults = '搜索时出现错误';
+          searchResults = 'Search error occurred';
         }
       }
 
@@ -70,26 +70,26 @@ export class PromptTemplateManager {
             role: 'system',
             content: {
               type: 'text',
-              text: `你是一个思源笔记搜索助手。你可以帮助用户在思源笔记中搜索和查找信息。
+              text: `You are a SiYuan Note search assistant. You can help users search and find information in SiYuan Notes.
 
-当前搜索结果：
-${searchResults || '暂无搜索结果'}
+Current Search Results:
+${searchResults || 'No search results yet'}
 
-请根据搜索结果为用户提供有用的信息和建议。`
+Please provide useful information and suggestions to users based on the search results.`
             }
           },
           {
             role: 'user',
             content: {
               type: 'text',
-              text: context || `请帮我搜索关于"${query}"的内容`
+              text: context || `Please help me search for information about "${query}"`
             }
           }
         ]
       };
     });
 
-    // 文档创建助手
+    // Document Creator Assistant
     this.templates.set('document-creator', async (variables) => {
       const { title, topic, notebook, outline = '' } = variables;
       
@@ -98,7 +98,7 @@ ${searchResults || '暂无搜索结果'}
         try {
           const notebooks = await this.siyuanClient.request('/api/notebook/lsNotebooks', {});
           const nb = notebooks.find((n: any) => n.id === notebook || n.name === notebook);
-          notebookInfo = nb ? `目标笔记本：${nb.name}` : '';
+          notebookInfo = nb ? `Target Notebook: ${nb.name}` : '';
         } catch (error) {
           notebookInfo = '';
         }
@@ -110,29 +110,29 @@ ${searchResults || '暂无搜索结果'}
             role: 'system',
             content: {
               type: 'text',
-              text: `你是一个思源笔记文档创建助手。你可以帮助用户创建结构化的文档内容。
+              text: `You are a SiYuan Note document creation assistant. You can help users create structured document content.
 
 ${notebookInfo}
 
-请根据用户提供的信息，创建一个结构清晰、内容丰富的文档。使用Markdown格式，包含适当的标题层级、列表和格式化。`
+Based on the information provided by the user, please create a structurally clear and content-rich document. Use Markdown format with appropriate heading levels, lists, and formatting.`
             }
           },
           {
             role: 'user',
             content: {
               type: 'text',
-              text: `请帮我创建一个关于"${topic || title}"的文档。
-${title ? `文档标题：${title}` : ''}
-${outline ? `大纲要求：${outline}` : ''}
+              text: `Please help me create a document about "${topic || title}".
+${title ? `Document Title: ${title}` : ''}
+${outline ? `Outline Requirements: ${outline}` : ''}
 
-请提供完整的文档内容。`
+Please provide complete document content.`
             }
           }
         ]
       };
     });
 
-    // 内容总结助手
+    // Content Summarizer Assistant
     this.templates.set('content-summarizer', async (variables) => {
       const { content, sessionId, style = 'concise' } = variables;
       
@@ -140,17 +140,17 @@ ${outline ? `大纲要求：${outline}` : ''}
       if (sessionId) {
         try {
           const context = await contextManager.exportContextSummary(sessionId);
-          contextInfo = `\n相关上下文：\n${context.summary}`;
+          contextInfo = `\nRelated Context:\n${context.summary}`;
         } catch (error) {
           contextInfo = '';
         }
       }
 
       const styleInstructions = {
-        concise: '请提供简洁的要点总结',
-        detailed: '请提供详细的分析和总结',
-        bullet: '请使用项目符号列表格式总结',
-        academic: '请使用学术风格进行总结分析'
+        concise: 'Please provide a concise summary of key points',
+        detailed: 'Please provide detailed analysis and summary',
+        bullet: 'Please summarize using bullet point list format',
+        academic: 'Please use academic style for summary analysis'
       };
 
       return {
@@ -159,16 +159,16 @@ ${outline ? `大纲要求：${outline}` : ''}
             role: 'system',
             content: {
               type: 'text',
-              text: `你是一个内容总结助手。你可以帮助用户总结和分析文档内容。
+              text: `You are a content summarization assistant. You can help users summarize and analyze document content.
 
-总结风格：${styleInstructions[style as keyof typeof styleInstructions] || styleInstructions.concise}${contextInfo}`
+Summarization Style: ${styleInstructions[style as keyof typeof styleInstructions] || styleInstructions.concise}${contextInfo}`
             }
           },
           {
             role: 'user',
             content: {
               type: 'text',
-              text: `请总结以下内容：
+              text: `Please summarize the following content:
 
 ${content}`
             }
@@ -177,7 +177,7 @@ ${content}`
       };
     });
 
-    // 知识连接助手
+    // Knowledge Connection Assistant
     this.templates.set('knowledge-connector', async (variables) => {
       const { topic, sessionId, depth = 'medium' } = variables;
       
