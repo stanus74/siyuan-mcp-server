@@ -1,58 +1,58 @@
 # SiYuan MCP Server
 
-一个为思源笔记（SiYuan）设计的 Model Context Protocol (MCP) 服务器，提供完整的 AI 集成和智能知识管理功能。
+Model Context Protocol (MCP) server designed for SiYuan Note, delivering comprehensive AI integration and intelligent knowledge management capabilities.
 
-## 🌟 核心特性
+## 🌟 Core Features
 
-### 笔记管理
-- **笔记本操作**: 创建、列表、打开、关闭、重命名、删除笔记本
-- **文档管理**: 创建、读取、更新、删除文档，支持批量操作
-- **块操作**: 创建、读取、更新、删除笔记块，支持批量操作
-- **块属性**: 设置和获取块属性，支持自定义属性管理
+### Notebook Management
+- **Notebook operations**: create, list, open, close, rename, and delete notebooks
+- **Document management**: create, read, update, delete documents with batch support
+- **Block operations**: create, read, update, delete blocks with batch capabilities
+- **Block attributes**: manage custom block metadata
 
-### 搜索功能
-- **简单搜索**: 快速关键词搜索
-- **递归搜索**: 深度内容挖掘，支持层级遍历
-- **文档内搜索**: 在指定文档中精确查找
-- **批量读取**: 高效批量读取多个文档
+### Search Capabilities
+- **Simple search**: quick keyword search
+- **Recursive search**: deep content harvesting with hierarchy traversal
+- **Document search**: precise lookups inside a document
+- **Batch read**: efficient retrieval of multiple documents
 
-### 模板与渲染
-- **模板渲染**: 支持标准模板语法
-- **Sprig模板**: 支持Sprig函数库的高级模板功能
-- **动态内容**: 基于模板生成格式化内容
+### Templates & Rendering
+- **Template rendering**: support standard template syntax
+- **Sprig templates**: leverage Sprig function library for advanced logic
+- **Dynamic content**: generate formatted content based on templates
 
-### 导出功能
-- **Markdown导出**: 导出为标准Markdown格式
-- **多格式导出**: 支持PDF、Word、HTML等多种格式
-- **树状结构导出**: 保留文档层级关系的JSON导出
+### Export Functionality
+- **Markdown export**: export to standard Markdown format
+- **Multi-format export**: support PDF, Word, HTML, and other formats
+- **Structured export**: preserve document hierarchy when exporting as JSON
 
-### 资源管理
-- **文件上传**: 上传图片、文档等资源文件
-- **资源列表**: 列出文档中的所有资源
-- **资源重命名**: 重命名资源文件
-- **OCR识别**: 图片文字识别功能
+### Resource Management
+- **File uploads**: upload images, documents, and other resources
+- **Resource listings**: enumerate all resources embedded in a document
+- **Resource renaming**: rename resource files
+- **OCR**: recognize text within images
 
-### 数据操作
-- **SQL查询**: 执行SQL查询，支持复杂的数据检索
-- **文件操作**: 读取、写入、删除文件
-- **文件列表**: 列出目录中的文件
+### Data Operations
+- **SQL queries**: execute SQL for complex data inspection
+- **File operations**: read, write, and delete files
+- **Directory listings**: enumerate files within folders
 
-### 系统工具
-- **时间获取**: 获取当前真实时间，支持多种格式和时区
-- **健康检查**: 系统健康状态监控
-- **端口发现**: 自动发现思源笔记可用端口
+### System Utilities
+- **Time retrieval**: fetch current time across formats and time zones
+- **Health checks**: monitor system status and SiYuan connectivity
+- **Port discovery**: automatically find available SiYuan ports
 
-### AI 智能集成
-- **智能工具选择**: AI驱动的工具推荐和选择
-- **使用场景指导**: 详细的工具使用场景和示例
-- **性能优化建议**: 基于使用模式的优化建议
-- **错误处理**: 标准化的错误处理和重试机制
+### AI Integration
+- **Smart tool selection**: AI-powered tool recommendations
+- **Usage guidance**: detailed usage scenarios and examples
+- **Performance tips**: optimization advice based on usage patterns
+- **Error management**: standardized error handling and retries
 
-### 性能优化
-- **缓存机制**: 智能缓存提升响应速度
-- **批量处理**: 高效的批量数据操作
-- **性能监控**: 实时性能指标和统计
-- **并发控制**: 合理的并发请求管理
+### Performance Optimization
+- **Caching strategies**: intelligent caching for faster responses
+- **Batch processing**: high-efficiency batch data operations
+- **Monitoring**: real-time performance metrics and stats
+- **Concurrency control**: manage request concurrency responsibly
 
 ## 🚀 快速开始
 
