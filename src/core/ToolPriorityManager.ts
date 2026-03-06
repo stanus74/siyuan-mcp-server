@@ -85,7 +85,7 @@ export class ToolPriorityManager {
         'Document title cannot be empty'
       ]
     });
-    // 文档查询工具
+    // Document query tools
     this.registerTool({
       toolName: 'getDoc',
       requiredTools: [],
@@ -102,7 +102,7 @@ export class ToolPriorityManager {
       validationRules: ['Search keyword cannot be empty']
     });
 
-    // 文档修改工具
+    // Document modification tools
     this.registerTool({
       toolName: 'updateDoc',
       requiredTools: ['getDoc'],
@@ -119,7 +119,7 @@ export class ToolPriorityManager {
       validationRules: ['Document must exist', 'Requires secondary confirmation']
     });
 
-    // 批量操作工具
+    // Batch operation tools
     this.registerTool({
       toolName: 'batchReadAllDocuments',
       requiredTools: ['listNotebooks'],
@@ -132,7 +132,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 注册工具依赖关系
+   * Register tool dependencies
    */
   registerTool(dependency: ToolDependency): void {
     this.toolDependencies.set(dependency.toolName, dependency);
@@ -140,7 +140,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 验证工具调用是否符合依赖关系
+   * Validate whether tool calls satisfy dependencies
    */
   validateToolCall(toolName: string, parameters?: any): {
     valid: boolean;
@@ -153,18 +153,18 @@ export class ToolPriorityManager {
     const warnings: string[] = [];
     const requiredPrerequisites: string[] = [];
 
-    // 检查工具是否已注册
+    // Check whether the tool has been registered
     if (!dependency) {
       warnings.push(`Tool ${toolName} has no registered dependencies, recommend adding`);
       return {
-        valid: true, // 未注册的工具允许调用，但给出警告
+        valid: true, // Unregistered tools are allowed but will trigger a warning
         errors,
         warnings,
         requiredPrerequisites
       };
     }
 
-    // 检查必需的前置工具是否已调用
+    // Check whether required prerequisite tools have been called
     for (const requiredTool of dependency.requiredTools) {
       const hasBeenCalled = this.callHistory.some(
         record => record.toolName === requiredTool && record.success
@@ -176,19 +176,19 @@ export class ToolPriorityManager {
       }
     }
 
-    // 特殊验证规则
+    // Special validation rules
     if (toolName === 'createDoc') {
-      // 验证笔记本参数
+      // Validate notebook parameter
       if (!parameters?.notebook) {
         errors.push('Parameter validation failed: missing notebook ID');
       }
 
-      // 验证标题参数
+      // Validate title parameter
       if (!parameters?.title || typeof parameters.title !== 'string' || parameters.title.trim().length === 0) {
         errors.push('Parameter validation failed: document title cannot be empty');
       }
 
-      // 检查是否尝试直接创建文档
+      // Check whether there is an attempt to create documents directly
       const hasNotebookValidation = this.callHistory.some(
         record => record.toolName === 'listNotebooks' && record.success
       );
@@ -207,12 +207,12 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 记录工具调用
+   * Record tool calls
    */
   recordToolCall(record: ToolCallRecord): void {
     this.callHistory.push(record);
 
-    // 限制历史记录大小
+    // Limit history size
     if (this.callHistory.length > this.maxHistorySize) {
       this.callHistory = this.callHistory.slice(-this.maxHistorySize);
     }
@@ -221,7 +221,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 获取工具调用建议顺序
+   * Get suggested tool call order
    */
   getSuggestedCallOrder(targetTool: string): string[] {
     const dependency = this.toolDependencies.get(targetTool);
@@ -241,13 +241,13 @@ export class ToolPriorityManager {
       const toolDep = this.toolDependencies.get(toolName);
       
       if (toolDep) {
-        // 先添加依赖工具
+        // Add dependent tools first
         for (const requiredTool of toolDep.requiredTools) {
           buildOrder(requiredTool);
         }
       }
 
-      // 再添加当前工具
+      // Then add the current tool
       if (!order.includes(toolName)) {
         order.push(toolName);
       }
@@ -258,7 +258,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 获取工具优先级
+   * Get tool priority
    */
   getToolPriority(toolName: string): ToolPriority {
     const dependency = this.toolDependencies.get(toolName);
@@ -266,7 +266,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 获取工具描述和验证规则
+   * Get tool description and validation rules
    */
   getToolInfo(toolName: string): {
     description: string;
@@ -288,7 +288,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 清理调用历史
+   * Clear call history
    */
   clearHistory(): void {
     this.callHistory = [];
@@ -296,7 +296,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 获取调用统计
+   * Get call statistics
    */
   getCallStatistics(): {
     totalCalls: number;
@@ -325,12 +325,12 @@ export class ToolPriorityManager {
       successfulCalls,
       failedCalls,
       toolUsageCount,
-      recentCalls: this.callHistory.slice(-10) // 最近10次调用
+      recentCalls: this.callHistory.slice(-10) // Most recent 10 calls
     };
   }
 
   /**
-   * 生成工具调用指南
+   * Generate tool call guide
    */
   generateCallGuide(): string {
     let guide = '# SiYuan MCP Tool Call Guide\n\n';
@@ -341,7 +341,7 @@ export class ToolPriorityManager {
 
     guide += '## Tool Priority and Dependencies\n\n';
 
-    // 按优先级分组
+    // Group by priority
     const toolsByPriority = new Map<ToolPriority, ToolDependency[]>();
     for (const [_, dependency] of this.toolDependencies) {
       const tools = toolsByPriority.get(dependency.priority) || [];
@@ -354,14 +354,14 @@ export class ToolPriorityManager {
       
       for (const tool of tools) {
         guide += `**${tool.toolName}**\n`;
-        guide += `- 描述: ${tool.description}\n`;
+        guide += `- Description: ${tool.description}\n`;
         
         if (tool.requiredTools.length > 0) {
-          guide += `- 依赖工具: ${tool.requiredTools.join(', ')}\n`;
+          guide += `- Dependencies: ${tool.requiredTools.join(', ')}\n`;
         }
         
         if (tool.validationRules && tool.validationRules.length > 0) {
-          guide += `- 验证规则:\n`;
+          guide += `- Validation rules:\n`;
           for (const rule of tool.validationRules) {
             guide += `  - ${rule}\n`;
           }
@@ -383,7 +383,7 @@ export class ToolPriorityManager {
   }
 
   /**
-   * 获取优先级名称
+   * Get priority name
    */
   private getPriorityName(priority: ToolPriority): string {
     switch (priority) {
@@ -398,26 +398,26 @@ export class ToolPriorityManager {
 }
 
 /**
- * 全局工具优先级管理器实例
+ * Global tool priority manager instance
  */
 export const toolPriorityManager = new ToolPriorityManager();
 
 /**
- * 便捷函数：验证工具调用
+ * Convenience wrapper: validate tool calls
  */
 function validateToolCall(toolName: string, parameters?: any) {
   return toolPriorityManager.validateToolCall(toolName, parameters);
 }
 
 /**
- * 便捷函数：记录工具调用
+ * Convenience wrapper: record tool calls
  */
 function recordToolCall(record: ToolCallRecord) {
   return toolPriorityManager.recordToolCall(record);
 }
 
 /**
- * 便捷函数：获取建议调用顺序
+ * Convenience wrapper: get suggested call order
  */
 function getSuggestedCallOrder(targetTool: string): string[] {
   return toolPriorityManager.getSuggestedCallOrder(targetTool);

@@ -40,7 +40,7 @@ interface ServiceSecurityConfig {
 }
 
 /**
- * 基础服务抽象类
+ * Base service abstract class
  */
 export abstract class BaseService {
   protected config: BaseConfig;
@@ -70,18 +70,18 @@ export abstract class BaseService {
       this.isInitialized = true;
       logger.info(`Service initialization completed: ${this.serviceName}`);
     } catch (error: any) {
-      logger.error(`服务初始化失败: ${this.serviceName}`, error);
+      logger.error(`Service initialization failed: ${this.serviceName}`, error);
       throw error;
     }
   }
 
   /**
-   * 子类实现的初始化逻辑
+   * Initialization logic that subclasses must implement
    */
   protected abstract onInitialize(): Promise<void>;
 
   /**
-   * 执行操作（带性能监控和错误处理）
+   * Execute operations with performance monitoring and error handling
    */
   protected async executeOperation<T>(
     operationName: string,
@@ -100,19 +100,19 @@ export abstract class BaseService {
     this.lastActivity = new Date();
 
     try {
-      // 检查缓存
+      // Check cache
       if (useCache && cacheKey) {
         const cache = cacheManager.getCache(this.serviceName);
         const cachedResult = cache.get(cacheKey);
         if (cachedResult) {
-          logger.debug(`缓存命中: ${operationName} - ${cacheKey}`);
+          logger.debug(`Cache hit: ${operationName} - ${cacheKey}`);
           return this.createSuccessResult(cachedResult, startTime, true);
         }
       }
 
-      // 执行操作（带超时控制）
+      // Execute operation with timeout control
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error(`操作超时: ${operationName}`)), timeout);
+        setTimeout(() => reject(new Error(`Operation timed out: ${operationName}`)), timeout);
       });
 
       const result = await Promise.race([
@@ -120,7 +120,7 @@ export abstract class BaseService {
         timeoutPromise
       ]);
 
-      // 缓存结果
+      // Cache result
       if (useCache && cacheKey) {
         const cache = cacheManager.getCache(this.serviceName);
         cache.set(cacheKey, result, cacheTTL);
@@ -131,7 +131,7 @@ export abstract class BaseService {
 
     } catch (error: any) {
       this.errorCount++;
-      logger.error(`操作失败: ${operationName}`, {
+      logger.error(`Operation failed: ${operationName}`, {
         serviceName: this.serviceName,
         error: error.message,
         stack: error.stack
@@ -142,7 +142,7 @@ export abstract class BaseService {
   }
 
   /**
-   * 创建成功结果
+   * Create success result
    */
   private createSuccessResult<T>(
     data: T, 
@@ -154,7 +154,7 @@ export abstract class BaseService {
     return {
       success: true,
       data,
-      message: fromCache ? '操作成功（来自缓存）' : '操作成功',
+      message: fromCache ? 'Operation successful (from cache)' : 'Operation successful',
       timestamp: new Date().toISOString(),
       performance: {
         executionTime,
@@ -170,7 +170,7 @@ export abstract class BaseService {
   }
 
   /**
-   * 创建错误结果
+   * Create error result
    */
   private createErrorResult<T = null>(error: string, startTime: number): OperationResult<T> {
     const executionTime = Date.now() - startTime;
@@ -179,7 +179,7 @@ export abstract class BaseService {
       success: false,
       data: null,
       error,
-      message: '操作失败',
+      message: 'Operation failed',
       timestamp: new Date().toISOString(),
       performance: {
         executionTime,
@@ -194,7 +194,7 @@ export abstract class BaseService {
   }
 
   /**
-   * 健康检查
+   * Health check
    */
   async healthCheck(): Promise<HealthCheckResult> {
     try {
@@ -205,7 +205,7 @@ export abstract class BaseService {
         status: isHealthy ? 'healthy' : 'degraded',
         details: {
           api: this.isInitialized,
-          database: true, // 简化实现
+          database: true, // Simplified implementation
           cache: true,
           memory: {
             used: memoryUsage.heapUsed,
@@ -230,7 +230,7 @@ export abstract class BaseService {
   }
 
   /**
-   * 获取模块状态
+   * Get module status
    */
   getModuleStatus(): ModuleStatus {
     const successRate = this.totalRequests > 0 
@@ -244,7 +244,7 @@ export abstract class BaseService {
       lastActivity: this.lastActivity.toISOString(),
       errorCount: this.errorCount,
       performance: {
-        averageResponseTime: 0, // 简化实现
+        averageResponseTime: 0, // Simplified implementation
         successRate: Math.round(successRate * 100) / 100,
         totalRequests: this.totalRequests
       }
