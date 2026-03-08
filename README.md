@@ -126,18 +126,11 @@ Add the following entry to your MCP client configuration:
 
 ### 📚 Notebook Operations
 - `list_notebooks` — List all notebooks
-- `open_notebook` — Open a notebook
-- `close_notebook` — Close a notebook
-- `rename_notebook` — Rename a notebook
-- `remove_notebook` — Delete a notebook
 
 ### 📄 Document Operations
 - `create_document` — Create a new document
-- `get_document` — Retrieve document content
-- `update_document` — Update document content
-- `delete_document` — Remove a document
-- `list_documents` — Enumerate documents
-- `batch_read_all` — Read all documents in bulk
+- `create_subdocument` — Create a subdocument under a path
+- `batch_read_all_documents` — Read all documents in a notebook
 
 ### 🧱 Block Operations
 - `create_block` — Create a block
@@ -156,9 +149,12 @@ Add the following entry to your MCP client configuration:
 - `batch_delete_blocks` — Delete several blocks in one request
 
 ### 🔍 Search Operations
-- `simple_search` — Basic keyword search
-- `recursive_search` — Deep search that traverses hierarchies
-- `search_in_document` — Search within a specified document
+- `search_content` — Basic keyword search
+- `advanced_search` — Multi-criteria search
+- `quick_text_search` — Lightweight search
+- `search_by_tags` — Search by tags
+- `search_by_date_range` — Search by date range
+- `recursive_search_notes` — Deep search that traverses hierarchies
 
 ### 🎨 Template Operations
 - `render_template` — Render a standard template
@@ -175,14 +171,19 @@ Add the following entry to your MCP client configuration:
 - `rename_asset` — Rename asset files
 - `ocr_asset` — OCR an image
 
-### 💾 SQL Queries
-- `query_sql` — Run SQL queries
+### 🏷️ Tag & Reference Operations
+- `get_all_tags` — List tags with usage stats
+- `search_tags` — Search tags
+- `manage_block_tags` — Add/remove/replace block tags
+- `get_block_tags` — Get tags for a block
+- `get_block_references` — Get block reference graph
+- `get_backlinks` — Get backlinks
+- `create_reference` — Create reference between blocks
 
-### 📁 File Operations
-- `read_file` — Read a file
-- `write_file` — Write a file
-- `delete_file` — Delete a file
-- `list_files` — List files in a directory
+### 📦 Batch Operations
+- `batch_create_blocks` — Create blocks in bulk
+- `batch_update_blocks` — Update blocks in bulk
+- `batch_delete_blocks` — Delete blocks in bulk
 
 ### ⏰ System Operations
 - `get_current_time` — Retrieve the current real-world time
