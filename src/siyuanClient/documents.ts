@@ -66,9 +66,14 @@ export function createDocumentOperations(client: SiyuanClient): DocumentOperatio
         throw new Error('创建文档失败: 必须提供有效的文档标题');
       }
       
+      const trimmedTitle = title.trim();
+      const resolvedPath = (!path || path.trim().length === 0)
+        ? `/${trimmedTitle}`
+        : (path.startsWith('/') ? path : `/${path}`);
+
       const createResponse = await client.request('/api/filetree/createDocWithMd', {
         notebook,
-        path: path || '/',
+        path: resolvedPath,
         markdown: markdown || ''
       });
       
@@ -79,8 +84,8 @@ export function createDocumentOperations(client: SiyuanClient): DocumentOperatio
           data: {
             id: createResponse.data?.id || `${Date.now().toString().substring(0, 14)}-${Math.random().toString(36).substring(2, 9)}`,
             notebook,
-            path: path || '/',
-            title: title.trim(),
+            path: resolvedPath,
+            title: trimmedTitle,
             markdown: markdown || '',
             created: new Date().toISOString()
           }
